@@ -16,6 +16,118 @@ export interface IODataParams {
   skip?: number;
 }
 
+export interface IAIQueryResult {
+  resource: string;
+  operation: string;
+  parameters: IDataObject;
+}
+
+/**
+ * Detect resource type from natural language query
+ */
+export function detectResourceFromQuery(query: string): string {
+  const patterns: { [key: string]: RegExp } = {
+    contact: /contact|person|customer|client|lead/i,
+    company: /company|business|organization|firm|corp/i,
+    job: /job|project|work|task/i,
+    invoice: /invoice|bill|payment due|billing/i,
+    opportunity: /opportunity|deal|prospect|sale/i,
+    activity: /activity|task|todo|reminder|follow.?up/i,
+    payment: /payment|receipt|transaction|paid/i,
+  };
+
+  for (const [resource, pattern] of Object.entries(patterns)) {
+    if (pattern.test(query)) return resource;
+  }
+  return 'contact'; // default to contact
+}
+
+/**
+ * Detect operation type from natural language query
+ */
+export function detectOperationFromQuery(query: string): string {
+  const patterns: { [key: string]: RegExp } = {
+    search: /find|search|look for|get all|list|show|retrieve/i,
+    create: /create|add|new|make|insert/i,
+    update: /update|edit|modify|change|set/i,
+    delete: /delete|remove|destroy|cancel/i,
+    get: /get|fetch|load|read/i,
+  };
+
+  for (const [operation, pattern] of Object.entries(patterns)) {
+    if (pattern.test(query)) return operation;
+  }
+  return 'search'; // default to search
+}
+
+/**
+ * Parse natural language query into structured parameters
+ */
+export function parseAIQuery(query: string): IAIQueryResult {
+  const resource = detectResourceFromQuery(query);
+  const operation = detectOperationFromQuery(query);
+  const parameters: IDataObject = {};
+
+  // Extract common patterns
+  const nameMatch = query.match(/(?:named?|called)\s+["']?([^"']+)["']?/i);
+  if (nameMatch) {
+    parameters.name = nameMatch[1].trim();
+  }
+
+  // Extract location patterns
+  const locationMatch = query.match(/(?:in|from|at)\s+([A-Z][A-Za-z\s]+)/i);
+  if (locationMatch) {
+    parameters.location = locationMatch[1].trim();
+  }
+
+  // Extract email
+  const emailMatch = query.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+  if (emailMatch) {
+    parameters.email = emailMatch[1];
+  }
+
+  // Extract date patterns
+  const datePatterns = [
+    /(?:from|since|after)\s+(\d{4}-\d{2}-\d{2}|today|yesterday|last\s+\w+)/i,
+    /(?:before|until|by)\s+(\d{4}-\d{2}-\d{2}|today|tomorrow|next\s+\w+)/i,
+  ];
+
+  for (const pattern of datePatterns) {
+    const match = query.match(pattern);
+    if (match) {
+      parameters.dateFilter = match[1];
+    }
+  }
+
+  // Build filter string for search operations
+  if (operation === 'search' || operation === 'getAll') {
+    const filters = [];
+    if (parameters.name) {
+      if (resource === 'contact') {
+        filters.push(`contains(FirstName, '${parameters.name}') or contains(LastName, '${parameters.name}')`);
+      } else {
+        filters.push(`contains(Name, '${parameters.name}')`);
+      }
+    }
+    if (parameters.location) {
+      filters.push(`State eq '${parameters.location}' or City eq '${parameters.location}'`);
+    }
+    if (parameters.email) {
+      filters.push(`Email eq '${parameters.email}'`);
+    }
+
+    if (filters.length > 0) {
+      parameters.filter = filters.join(' and ');
+    }
+  }
+
+  return {
+    resource,
+    operation,
+    parameters,
+  };
+}
+
 /**
  * Build OData query string from parameters
  */

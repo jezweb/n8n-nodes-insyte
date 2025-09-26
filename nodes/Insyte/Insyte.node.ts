@@ -14,6 +14,7 @@ import {
   buildODataQuery,
   IODataParams,
   getResourceProperties,
+  parseAIQuery,
 } from './helpers';
 
 export class Insyte implements INodeType {
@@ -30,6 +31,7 @@ export class Insyte implements INodeType {
     },
     inputs: ['main'],
     outputs: ['main'],
+    usableAsTool: true,
     credentials: [
       {
         name: 'insyteApi',
@@ -44,6 +46,11 @@ export class Insyte implements INodeType {
         type: 'options',
         noDataExpression: true,
         options: [
+          {
+            name: 'AI Mode',
+            value: 'ai',
+            description: 'AI-driven resource selection based on context',
+          },
           {
             name: 'Activity',
             value: 'activity',
@@ -83,6 +90,21 @@ export class Insyte implements INodeType {
         default: 'contact',
       },
 
+      // AI Mode Operations
+      {
+        displayName: 'AI Query',
+        name: 'aiQuery',
+        type: 'string',
+        default: '={{ $fromAI("query", "Natural language query for CRM operation") }}',
+        placeholder: 'e.g., Find all contacts in NSW, Create new invoice for John Doe',
+        description: 'Natural language description of what you want to do',
+        displayOptions: {
+          show: {
+            resource: ['ai'],
+          },
+        },
+      },
+
       // Operations
       {
         displayName: 'Operation',
@@ -104,22 +126,28 @@ export class Insyte implements INodeType {
         },
         options: [
           {
+            name: 'Search',
+            value: 'search',
+            description: 'Search for records using natural language or filters',
+            action: 'Search CRM records',
+          },
+          {
             name: 'Create',
             value: 'create',
-            description: 'Create a new record',
-            action: 'Create a record',
+            description: 'Create a new contact, company, job, or other record',
+            action: 'Create a CRM record',
           },
           {
             name: 'Delete',
             value: 'delete',
-            description: 'Delete a record',
-            action: 'Delete a record',
+            description: 'Delete a record by ID',
+            action: 'Delete a CRM record',
           },
           {
             name: 'Get',
             value: 'get',
-            description: 'Get a record by ID',
-            action: 'Get a record',
+            description: 'Get a specific record by ID',
+            action: 'Get a CRM record',
           },
           {
             name: 'Get Many',
@@ -424,8 +452,29 @@ export class Insyte implements INodeType {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const items = this.getInputData();
     const returnData: IDataObject[] = [];
-    const resource = this.getNodeParameter('resource', 0) as string;
-    const operation = this.getNodeParameter('operation', 0) as string;
+    let resource = this.getNodeParameter('resource', 0) as string;
+    let operation = this.getNodeParameter('operation', 0, '') as string;
+
+    // Handle AI mode
+    if (resource === 'ai') {
+      const aiQuery = this.getNodeParameter('aiQuery', 0) as string;
+      const aiResult = parseAIQuery(aiQuery);
+      resource = aiResult.resource;
+      operation = aiResult.operation;
+
+      // Store AI parameters for later use
+      const aiParameters = aiResult.parameters;
+
+      // Log AI interpretation for debugging
+      returnData.push({
+        _aiInterpretation: {
+          query: aiQuery,
+          detectedResource: resource,
+          detectedOperation: operation,
+          extractedParameters: aiParameters,
+        },
+      });
+    }
 
     // Map resource to API endpoint
     const resourceMap: { [key: string]: string } = {
@@ -442,7 +491,7 @@ export class Insyte implements INodeType {
 
     for (let i = 0; i < items.length; i++) {
       try {
-        if (operation === 'getAll') {
+        if (operation === 'getAll' || operation === 'search') {
           const returnAll = this.getNodeParameter('returnAll', i) as boolean;
           const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
@@ -462,6 +511,14 @@ export class Insyte implements INodeType {
 
           if (additionalFields.expand) {
             queryParams.expand = additionalFields.expand as string;
+          }
+
+          // Apply AI-extracted parameters if in AI mode
+          if (resource === 'ai' && returnData.length > 0) {
+            const aiParams = returnData[0]._aiInterpretation as any;
+            if (aiParams?.extractedParameters?.filter) {
+              queryParams.filter = aiParams.extractedParameters.filter as string;
+            }
           }
 
           if (returnAll) {

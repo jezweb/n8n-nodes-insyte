@@ -2,6 +2,36 @@
 
 This is an n8n community node for the [Insyte CRM API](https://new-api.insyteblinds.com/swagger/index.html), specifically designed for the Window Furnishings Industry.
 
+## 🤖 AI Tool Support (v0.2.0+)
+
+This node is **AI-tool ready** and can be used with n8n's AI Agent nodes for natural language CRM operations.
+
+### Using with AI Agents
+
+1. Add an **AI Agent** node to your workflow
+2. Add the **Insyte CRM** node
+3. Connect Insyte to the AI Agent's **tool port**
+4. Configure the tool in AI Agent with a descriptive name and description
+5. For community nodes, ensure environment variable is set:
+   ```bash
+   N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+   ```
+
+### AI Mode Features
+
+- **Natural Language Queries**: Use plain English to interact with the CRM
+- **Smart Resource Detection**: Automatically identifies whether you're working with contacts, companies, jobs, etc.
+- **Intelligent Operation Mapping**: Understands "find", "create", "update", "delete" from context
+- **Parameter Extraction**: Extracts names, emails, locations from natural language
+
+### Example AI Queries
+
+- "Find all contacts in NSW"
+- "Create a new job for John Doe"
+- "Get invoices from last month"
+- "Search for companies named Acme"
+- "Delete contact with email john@example.com"
+
 ## Features
 
 Interact with the Insyte CRM API to manage:
@@ -53,6 +83,7 @@ Contact your Insyte administrator or refer to the [Insyte API documentation](htt
 
 Each resource supports the following operations:
 
+- **Search** - Search for records using natural language or filters (AI-optimized)
 - **Get Many** - Retrieve multiple records with OData filtering
 - **Get** - Retrieve a single record by ID
 - **Create** - Create a new record
