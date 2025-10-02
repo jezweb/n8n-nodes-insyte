@@ -137,18 +137,6 @@ export class Insyte implements INodeType {
             action: 'Search CRM records',
           },
           {
-            name: 'Create',
-            value: 'create',
-            description: 'Create a new contact, company, job, or other record',
-            action: 'Create a CRM record',
-          },
-          {
-            name: 'Delete',
-            value: 'delete',
-            description: 'Delete a record by ID',
-            action: 'Delete a CRM record',
-          },
-          {
             name: 'Get',
             value: 'get',
             description: 'Get a specific record by ID',
@@ -159,12 +147,6 @@ export class Insyte implements INodeType {
             value: 'getAll',
             description: 'Get many records',
             action: 'Get many records',
-          },
-          {
-            name: 'Update',
-            value: 'update',
-            description: 'Update a record',
-            action: 'Update a record',
           },
         ],
         default: 'getAll',
@@ -206,7 +188,7 @@ export class Insyte implements INodeType {
         required: true,
         displayOptions: {
           show: {
-            operation: ['get', 'delete', 'update'],
+            operation: ['get'],
           },
         },
         default: '',
@@ -254,7 +236,7 @@ export class Insyte implements INodeType {
         default: {},
         displayOptions: {
           show: {
-            operation: ['getAll', 'create', 'update'],
+            operation: ['getAll'],
           },
         },
         options: [
@@ -313,156 +295,6 @@ export class Insyte implements INodeType {
             default: '',
             placeholder: 'e.g., Company',
             description: 'Related entities to include',
-          },
-        ],
-      },
-
-      // Update/Create Fields - Dynamic based on resource
-      {
-        displayName: 'Fields',
-        name: 'fields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: {
-          show: {
-            operation: ['create', 'update'],
-            resource: ['contact'],
-          },
-        },
-        options: [
-          {
-            displayName: 'First Name',
-            name: 'FirstName',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Last Name',
-            name: 'LastName',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Email',
-            name: 'Email',
-            type: 'string',
-            placeholder: 'name@email.com',
-            default: '',
-          },
-          {
-            displayName: 'Phone',
-            name: 'Phone',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Mobile',
-            name: 'Mobile',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Company ID',
-            name: 'CompanyID',
-            type: 'number',
-            default: 0,
-          },
-          {
-            displayName: 'Address',
-            name: 'Address',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'City',
-            name: 'City',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'State',
-            name: 'State',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Postcode',
-            name: 'Postcode',
-            type: 'string',
-            default: '',
-          },
-        ],
-      },
-
-      // Company Fields
-      {
-        displayName: 'Fields',
-        name: 'fields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: {
-          show: {
-            operation: ['create', 'update'],
-            resource: ['company'],
-          },
-        },
-        options: [
-          {
-            displayName: 'Name',
-            name: 'Name',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Trading Name',
-            name: 'TradingName',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'ABN',
-            name: 'ABN',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Email',
-            name: 'Email',
-            type: 'string',
-            placeholder: 'company@email.com',
-            default: '',
-          },
-          {
-            displayName: 'Phone',
-            name: 'Phone',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Address',
-            name: 'Address',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'City',
-            name: 'City',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'State',
-            name: 'State',
-            type: 'string',
-            default: '',
-          },
-          {
-            displayName: 'Postcode',
-            name: 'Postcode',
-            type: 'string',
-            default: '',
           },
         ],
       },
@@ -949,39 +781,6 @@ export class Insyte implements INodeType {
             `${endpoint}(${id})`,
           );
           returnData.push(responseData);
-        }
-
-        if (operation === 'create') {
-          const fields = this.getNodeParameter('fields', i) as IDataObject;
-          const responseData = await insyteApiRequest.call(
-            this,
-            'POST',
-            endpoint,
-            fields,
-          );
-          returnData.push(responseData);
-        }
-
-        if (operation === 'update') {
-          const id = this.getNodeParameter('id', i) as string;
-          const fields = this.getNodeParameter('fields', i) as IDataObject;
-          const responseData = await insyteApiRequest.call(
-            this,
-            'PATCH',
-            `${endpoint}(${id})`,
-            fields,
-          );
-          returnData.push(responseData);
-        }
-
-        if (operation === 'delete') {
-          const id = this.getNodeParameter('id', i) as string;
-          await insyteApiRequest.call(
-            this,
-            'DELETE',
-            `${endpoint}(${id})`,
-          );
-          returnData.push({ success: true, id });
         }
       } catch (error) {
         if (this.continueOnFail()) {

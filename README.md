@@ -21,27 +21,36 @@ This node is **AI-tool ready** and can be used with n8n's AI Agent nodes for nat
 
 - **Natural Language Queries**: Use plain English to interact with the CRM
 - **Smart Resource Detection**: Automatically identifies whether you're working with contacts, companies, jobs, etc.
-- **Intelligent Operation Mapping**: Understands "find", "create", "update", "delete" from context
+- **Intelligent Operation Mapping**: Understands "find", "search", "get" from context, plus "book appointment" and "check availability" for Live Diary
 - **Parameter Extraction**: Extracts names, emails, locations from natural language
 
 ### Example AI Queries
 
 - "Find all contacts in NSW"
-- "Create a new job for John Doe"
 - "Get invoices from last month"
 - "Search for companies named Acme"
-- "Delete contact with email john@example.com"
+- "Check available appointment slots next week"
+- "Book an appointment for John Doe"
 
 ## Features
 
-Interact with the Insyte CRM API to manage:
-- 📋 **Activities** - Tasks and activity management
-- 🏢 **Companies** - Business entity management
-- 👤 **Contacts** - Customer contact information
-- 💵 **Invoices** - Invoice creation and management
-- 🔨 **Jobs** - Job/project tracking
-- 💼 **Opportunities** - Sales opportunity pipeline
-- 💰 **Payments** - Payment processing and tracking
+### Read-Only CRM Data Access
+
+Access Insyte CRM data (read-only):
+- 📋 **Activities** - View tasks and activity records
+- 🏢 **Companies** - View business entities
+- 👤 **Contacts** - View customer contact information
+- 💵 **Invoices** - View invoice records
+- 🔨 **Jobs** - View job/project data
+- 💼 **Opportunities** - View sales opportunity pipeline
+- 💰 **Payments** - View payment records
+
+### Lead Booking (Write Access)
+
+Create new leads with scheduled appointments:
+- 📅 **Live Diary** - Check availability and book sales appointments
+  - **Check Availability**: Query available time slots for sales meetings
+  - **Book Lead**: Create new lead with contact details and scheduled appointment
 
 ## Installation
 
@@ -81,14 +90,22 @@ Contact your Insyte administrator or refer to the [Insyte API documentation](htt
 
 ## Operations
 
-Each resource supports the following operations:
+### CRM Data Resources (Read-Only)
+
+Standard resources (Activities, Companies, Contacts, Invoices, Jobs, Opportunities, Payments) support:
 
 - **Search** - Search for records using natural language or filters (AI-optimized)
 - **Get Many** - Retrieve multiple records with OData filtering
 - **Get** - Retrieve a single record by ID
-- **Create** - Create a new record
-- **Update** - Update an existing record
-- **Delete** - Delete a record
+
+> **Note**: The Insyte API provides read-only access to CRM data. To create or modify records, use the Insyte application directly.
+
+### Live Diary Operations (Write Access)
+
+The Live Diary resource provides the only write operations available via the API:
+
+- **Check Availability** - Query available appointment slots (location, date range, duration, filters)
+- **Book Lead** - Create a new lead with contact details and scheduled sales appointment
 
 ### OData Query Support
 

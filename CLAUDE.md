@@ -2,13 +2,22 @@
 
 ## Project Overview
 
-**n8n-nodes-insyte** is a community node for the Insyte CRM API, designed for the Window Furnishings Industry. It provides full CRUD operations and AI tool integration for seamless natural language CRM workflows.
+**n8n-nodes-insyte** is a community node for the Insyte CRM API, designed for the Window Furnishings Industry. It provides read-only access to CRM data and write access for booking sales appointments via Live Diary, with full AI tool integration.
 
 - **Package**: n8n-nodes-insyte
-- **Version**: 0.2.0+
+- **Version**: 0.3.0+
 - **Repository**: https://github.com/jezweb/n8n-nodes-insyte
 - **npm**: https://www.npmjs.com/package/n8n-nodes-insyte
 - **API**: https://new-api.insyteblinds.com
+
+## **IMPORTANT: API Limitations**
+
+The Insyte API is **primarily read-only**:
+- ✅ **READ operations** (GET) supported on all CRM resources
+- ❌ **WRITE operations** (POST/PATCH/DELETE) **NOT supported** on CRM resources
+- ✅ **WRITE operations** **ONLY available** on LiveDiary endpoints (check availability, book leads)
+
+This is by design in the Insyte API - CRM data modification happens through the Insyte application, while the API provides data access and online appointment booking.
 
 ## Project Structure
 
@@ -28,24 +37,36 @@ n8n-nodes-insyte-api/
 
 ## Core Resources
 
-The node supports these Insyte CRM resources:
-- **Activities** - Tasks and activity management
-- **Companies** - Business entity management
-- **Contacts** - Customer contact information
-- **Invoices** - Invoice creation and management (with InvoiceLines)
-- **Jobs** - Job/project tracking (with JobLines)
-- **Opportunities** - Sales opportunity pipeline
-- **Payments** - Payment processing and tracking
+### Read-Only CRM Resources
+
+The node provides read access to these Insyte CRM resources:
+- **Activities** - View tasks and activity records
+- **Companies** - View business entities
+- **Contacts** - View customer contact information
+- **Invoices** - View invoice records (with InvoiceLines)
+- **Jobs** - View job/project data (with JobLines)
+- **Opportunities** - View sales opportunity pipeline
+- **Payments** - View payment records
+
+### Write-Enabled Resource
+
+- **Live Diary** - Check availability and book sales appointments (v0.3.0+)
+  - Check Availability - Query available time slots
+  - Book Lead - Create new lead with scheduled appointment
 
 ## Operations Supported
 
-Each resource supports:
+### Standard CRM Resources (Read-Only)
+
+Each CRM resource supports:
 - **Search** - Natural language or OData filtering (AI-optimized)
 - **Get Many** - List records with pagination
 - **Get** - Retrieve by ID
-- **Create** - Create new records
-- **Update** - Modify existing records
-- **Delete** - Remove records
+
+### Live Diary Resource (Write Access)
+
+- **Check Availability** - Query available appointment slots
+- **Book Lead** - Create new lead with appointment
 
 ## AI Tool Features (v0.2.0+)
 
@@ -60,9 +81,10 @@ Each resource supports:
 
 ### AI Query Examples
 - "Find all contacts in NSW"
-- "Create a new job for John Doe"
 - "Search for companies named Acme Corporation"
 - "Get invoices from last month"
+- "Check available appointment slots next week"
+- "Book an appointment for John Doe"
 
 ## Development Guidelines
 

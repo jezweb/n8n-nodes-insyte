@@ -51,9 +51,6 @@ export function detectOperationFromQuery(query: string): string {
     checkAvailability: /check.{0,20}availability|available.{0,20}time|when.{0,20}available|find.{0,20}slot|available.{0,20}slot/i,
     bookLead: /book.{0,20}appointment|schedule.{0,20}meeting|book.{0,20}lead|create.{0,20}appointment/i,
     search: /find|search|look for|get all|list|show|retrieve/i,
-    create: /create|add|new|make|insert/i,
-    update: /update|edit|modify|change|set/i,
-    delete: /delete|remove|destroy|cancel/i,
     get: /get|fetch|load|read/i,
   };
 
