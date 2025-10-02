@@ -86,6 +86,11 @@ export class Insyte implements INodeType {
             value: 'payment',
             description: 'Manage payments',
           },
+          {
+            name: 'Live Diary',
+            value: 'liveDiary',
+            description: 'Check availability and book sales appointments for leads',
+          },
         ],
         default: 'contact',
       },
@@ -105,7 +110,7 @@ export class Insyte implements INodeType {
         },
       },
 
-      // Operations
+      // Operations for standard resources
       {
         displayName: 'Operation',
         name: 'operation',
@@ -163,6 +168,34 @@ export class Insyte implements INodeType {
           },
         ],
         default: 'getAll',
+      },
+
+      // Operations for Live Diary
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+          },
+        },
+        options: [
+          {
+            name: 'Check Availability',
+            value: 'checkAvailability',
+            description: 'Check available appointment slots for sales meetings',
+            action: 'Check availability for appointments',
+          },
+          {
+            name: 'Book Lead',
+            value: 'bookLead',
+            description: 'Book a sales appointment for a new lead',
+            action: 'Book lead appointment',
+          },
+        ],
+        default: 'checkAvailability',
       },
 
       // ID field for single operations
@@ -433,6 +466,263 @@ export class Insyte implements INodeType {
           },
         ],
       },
+
+      // ========================================
+      // Live Diary - Check Availability Parameters
+      // ========================================
+      {
+        displayName: 'Latitude',
+        name: 'latitude',
+        type: 'number',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['checkAvailability', 'bookLead'],
+          },
+        },
+        default: 0,
+        description: 'Latitude of the appointment location (required to determine timezone)',
+      },
+      {
+        displayName: 'Longitude',
+        name: 'longitude',
+        type: 'number',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['checkAvailability', 'bookLead'],
+          },
+        },
+        default: 0,
+        description: 'Longitude of the appointment location (required to determine timezone)',
+      },
+      {
+        displayName: 'From Date',
+        name: 'fromDate',
+        type: 'dateTime',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['checkAvailability'],
+          },
+        },
+        default: '',
+        description: 'Start date for availability search',
+      },
+      {
+        displayName: 'To Date',
+        name: 'toDate',
+        type: 'dateTime',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['checkAvailability'],
+          },
+        },
+        default: '',
+        description: 'End date for availability search',
+      },
+      {
+        displayName: 'Appointment Duration (Minutes)',
+        name: 'appointmentMinutes',
+        type: 'number',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['checkAvailability'],
+          },
+        },
+        default: 60,
+        description: 'Duration of the appointment in minutes',
+      },
+      {
+        displayName: 'Additional Options',
+        name: 'availabilityOptions',
+        type: 'collection',
+        placeholder: 'Add Option',
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['checkAvailability'],
+          },
+        },
+        options: [
+          {
+            displayName: 'Filter By Roster',
+            name: 'filterByRoster',
+            type: 'boolean',
+            default: true,
+            description: 'Whether to check only rostered times (true) or 9am-5pm (false)',
+          },
+          {
+            displayName: 'Filter By Skills',
+            name: 'filterBySkills',
+            type: 'boolean',
+            default: false,
+            description: 'Whether to match sales rep skills to products',
+          },
+          {
+            displayName: 'Products Of Interest',
+            name: 'productsOfInterests',
+            type: 'string',
+            default: '',
+            placeholder: '1,2,3',
+            description: 'Comma-separated list of product IDs',
+          },
+          {
+            displayName: 'Postcode',
+            name: 'postcode',
+            type: 'string',
+            default: '',
+            description: 'Filter by postcode',
+          },
+          {
+            displayName: 'State',
+            name: 'state',
+            type: 'string',
+            default: '',
+            description: 'Filter by state (e.g., NSW, VIC)',
+          },
+          {
+            displayName: 'City',
+            name: 'city',
+            type: 'string',
+            default: '',
+            description: 'Filter by city',
+          },
+        ],
+      },
+
+      // ========================================
+      // Live Diary - Book Lead Parameters
+      // ========================================
+      {
+        displayName: 'Slot Key',
+        name: 'slotKey',
+        type: 'string',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['bookLead'],
+          },
+        },
+        default: '',
+        description: 'The SlotKey returned from the availability request',
+      },
+      {
+        displayName: 'First Name',
+        name: 'firstName',
+        type: 'string',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['bookLead'],
+          },
+        },
+        default: '',
+        description: 'Lead first name',
+      },
+      {
+        displayName: 'Last Name',
+        name: 'lastName',
+        type: 'string',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['bookLead'],
+          },
+        },
+        default: '',
+        description: 'Lead last name',
+      },
+      {
+        displayName: 'Address',
+        name: 'address',
+        type: 'string',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['bookLead'],
+          },
+        },
+        default: '',
+        description: 'Lead address',
+      },
+      {
+        displayName: 'Additional Lead Details',
+        name: 'leadDetails',
+        type: 'collection',
+        placeholder: 'Add Detail',
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ['liveDiary'],
+            operation: ['bookLead'],
+          },
+        },
+        options: [
+          {
+            displayName: 'Email',
+            name: 'email',
+            type: 'string',
+            default: '',
+            placeholder: 'lead@example.com',
+            description: 'Lead email address',
+          },
+          {
+            displayName: 'Phone Number',
+            name: 'phoneNumber',
+            type: 'string',
+            default: '',
+            description: 'Lead phone number',
+          },
+          {
+            displayName: 'Mobile Number',
+            name: 'mobileNumber',
+            type: 'string',
+            default: '',
+            description: 'Lead mobile number',
+          },
+          {
+            displayName: 'Marketing Opt Out',
+            name: 'marketingOptOut',
+            type: 'boolean',
+            default: false,
+            description: 'Whether lead has opted out of marketing',
+          },
+          {
+            displayName: 'Lead Source ID',
+            name: 'leadSourceID',
+            type: 'number',
+            default: undefined,
+            description: 'Lead source ID to track where the lead came from',
+          },
+          {
+            displayName: 'Duration Minutes',
+            name: 'durationMins',
+            type: 'number',
+            default: 60,
+            description: 'Appointment duration in minutes',
+          },
+          {
+            displayName: 'Estimated Travel Minutes',
+            name: 'estimatedTravelMins',
+            type: 'number',
+            default: 20,
+            description: 'Travel time in minutes (used for utilization calculation)',
+          },
+        ],
+      },
     ],
   };
 
@@ -474,6 +764,105 @@ export class Insyte implements INodeType {
           extractedParameters: aiParameters,
         },
       });
+    }
+
+    // Handle Live Diary operations separately
+    if (resource === 'liveDiary') {
+      for (let i = 0; i < items.length; i++) {
+        try {
+          if (operation === 'checkAvailability') {
+            const latitude = this.getNodeParameter('latitude', i) as number;
+            const longitude = this.getNodeParameter('longitude', i) as number;
+            const fromDate = this.getNodeParameter('fromDate', i) as string;
+            const toDate = this.getNodeParameter('toDate', i) as string;
+            const appointmentMinutes = this.getNodeParameter('appointmentMinutes', i) as number;
+            const options = this.getNodeParameter('availabilityOptions', i) as IDataObject;
+
+            const body: IDataObject = {
+              latitude,
+              longitude,
+              fromDate,
+              toDate,
+              appointmentMinutes,
+            };
+
+            // Add optional fields
+            if (options.filterByRoster !== undefined) {
+              body.filterByRoster = options.filterByRoster;
+            }
+            if (options.filterBySkills !== undefined) {
+              body.filterBySkills = options.filterBySkills;
+            }
+            if (options.productsOfInterests) {
+              const products = (options.productsOfInterests as string).split(',').map(p => parseInt(p.trim(), 10));
+              body.productsOfInterests = products;
+            }
+            if (options.postcode || options.state || options.city) {
+              body.areaFilter = {
+                postcode: options.postcode || null,
+                state: options.state || null,
+                city: options.city || null,
+              };
+            }
+
+            const responseData = await insyteApiRequest.call(
+              this,
+              'POST',
+              '/LiveDiary/Sales/Availability',
+              body,
+            );
+            returnData.push(responseData);
+          }
+
+          if (operation === 'bookLead') {
+            const slotKey = this.getNodeParameter('slotKey', i) as string;
+            const firstName = this.getNodeParameter('firstName', i) as string;
+            const lastName = this.getNodeParameter('lastName', i) as string;
+            const address = this.getNodeParameter('address', i) as string;
+            const leadDetails = this.getNodeParameter('leadDetails', i) as IDataObject;
+
+            const body: IDataObject = {
+              slotKey,
+              lead: {
+                firstName,
+                lastName,
+                address,
+                email: leadDetails.email || null,
+                phoneNumber: leadDetails.phoneNumber || null,
+                mobileNumber: leadDetails.mobileNumber || null,
+                marketingOptOut: leadDetails.marketingOptOut || false,
+              },
+            };
+
+            // Add optional top-level fields
+            if (leadDetails.leadSourceID !== undefined) {
+              body.leadSourceID = leadDetails.leadSourceID;
+            }
+            if (leadDetails.durationMins !== undefined) {
+              body.durationMins = leadDetails.durationMins;
+            }
+            if (leadDetails.estimatedTravelMins !== undefined) {
+              body.estimatedTravelMins = leadDetails.estimatedTravelMins;
+            }
+
+            const responseData = await insyteApiRequest.call(
+              this,
+              'POST',
+              '/LiveDiary/Sales/BookLead',
+              body,
+            );
+            returnData.push(responseData);
+          }
+        } catch (error) {
+          if (this.continueOnFail()) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            returnData.push({ error: errorMessage });
+            continue;
+          }
+          throw error;
+        }
+      }
+      return [this.helpers.returnJsonArray(returnData)];
     }
 
     // Map resource to API endpoint

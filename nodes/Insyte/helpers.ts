@@ -27,6 +27,7 @@ export interface IAIQueryResult {
  */
 export function detectResourceFromQuery(query: string): string {
   const patterns: { [key: string]: RegExp } = {
+    liveDiary: /book.{0,20}appointment|schedule.{0,20}meeting|check.{0,20}availability|available.{0,20}slot|appointment.{0,20}time|sales.{0,20}appointment/i,
     contact: /contact|person|customer|client|lead/i,
     company: /company|business|organization|firm|corp/i,
     job: /job|project|work|task/i,
@@ -47,6 +48,8 @@ export function detectResourceFromQuery(query: string): string {
  */
 export function detectOperationFromQuery(query: string): string {
   const patterns: { [key: string]: RegExp } = {
+    checkAvailability: /check.{0,20}availability|available.{0,20}time|when.{0,20}available|find.{0,20}slot|available.{0,20}slot/i,
+    bookLead: /book.{0,20}appointment|schedule.{0,20}meeting|book.{0,20}lead|create.{0,20}appointment/i,
     search: /find|search|look for|get all|list|show|retrieve/i,
     create: /create|add|new|make|insert/i,
     update: /update|edit|modify|change|set/i,
