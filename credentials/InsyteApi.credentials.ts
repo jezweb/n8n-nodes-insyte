@@ -11,15 +11,23 @@ export class InsyteApi implements ICredentialType {
   documentationUrl = 'https://new-api.insyteblinds.com/swagger/index.html';
   properties: INodeProperties[] = [
     {
-      displayName: 'API Key',
-      name: 'apiKey',
+      displayName: 'Username',
+      name: 'username',
+      type: 'string',
+      default: '',
+      required: true,
+      description: 'The username for authenticating with the Insyte API',
+    },
+    {
+      displayName: 'Password',
+      name: 'password',
       type: 'string',
       typeOptions: {
         password: true,
       },
       default: '',
       required: true,
-      description: 'The API key for authenticating with the Insyte API',
+      description: 'The password for authenticating with the Insyte API',
     },
     {
       displayName: 'Base URL',
@@ -30,21 +38,12 @@ export class InsyteApi implements ICredentialType {
       placeholder: 'https://new-api.insyteblinds.com',
     },
     {
-      displayName: 'API Version',
-      name: 'apiVersion',
-      type: 'options',
-      options: [
-        {
-          name: 'Version 2',
-          value: 'v2',
-        },
-        {
-          name: 'Version 1',
-          value: 'v1',
-        },
-      ],
-      default: 'v2',
-      description: 'The API version to use',
+      displayName: 'Allowed Domains',
+      name: 'allowedDomains',
+      type: 'string',
+      default: 'new-api.insyteblinds.com',
+      description: 'Comma-separated list of allowed domains for HTTP requests',
+      placeholder: 'new-api.insyteblinds.com,api.example.com',
     },
   ];
 
@@ -52,7 +51,7 @@ export class InsyteApi implements ICredentialType {
     type: 'generic',
     properties: {
       headers: {
-        Authorization: '=Bearer {{$credentials.apiKey}}',
+        Authorization: '=Basic {{ btoa($credentials.username + ":" + $credentials.password) }}',
       },
     },
   };
@@ -60,7 +59,7 @@ export class InsyteApi implements ICredentialType {
   test: ICredentialTestRequest = {
     request: {
       baseURL: '={{$credentials.baseUrl}}',
-      url: '/{{$credentials.apiVersion}}/Users',
+      url: '/v2/Users',
       method: 'GET',
     },
   };
