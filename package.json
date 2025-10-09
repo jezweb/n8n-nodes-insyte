@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-insyte",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "n8n node for Insyte CRM API (Window Furnishings Industry)",
   "keywords": [
     "n8n",
