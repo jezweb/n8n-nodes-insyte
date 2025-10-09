@@ -154,7 +154,7 @@ export async function insyteApiRequest(
 ): Promise<any> {
   const credentials = await this.getCredentials('insyteApi') as IDataObject;
   const baseUrl = (credentials.baseUrl as string) || 'https://new-api.insyteblinds.com';
-  const apiVersion = (credentials.apiVersion as string) || 'v2';
+  const apiVersion = 'v2';
 
   const options: IHttpRequestOptions = {
     method: method as any,
@@ -165,13 +165,6 @@ export async function insyteApiRequest(
     },
     json: true,
   };
-
-  if (credentials.apiKey) {
-    options.headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${credentials.apiKey}`,
-    };
-  }
 
   if (body && Object.keys(body).length > 0) {
     options.body = body;
