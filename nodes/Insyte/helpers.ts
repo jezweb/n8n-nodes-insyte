@@ -154,7 +154,12 @@ export async function insyteApiRequest(
 ): Promise<any> {
   const credentials = await this.getCredentials('insyteApi') as IDataObject;
   const baseUrl = (credentials.baseUrl as string) || 'https://new-api.insyteblinds.com';
-  const apiVersion = 'v2';
+  const apiVersion = (credentials.apiVersion as string) || 'v2';
+
+  // Create Basic Auth header
+  const username = credentials.username as string;
+  const password = credentials.password as string;
+  const authString = Buffer.from(`${username}:${password}`).toString('base64');
 
   const options: IHttpRequestOptions = {
     method: method as any,
@@ -162,6 +167,7 @@ export async function insyteApiRequest(
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
+      'Authorization': `Basic ${authString}`,
     },
     json: true,
   };
@@ -175,7 +181,7 @@ export async function insyteApiRequest(
   }
 
   try {
-    const response = await this.helpers.httpRequestWithAuthentication.call(this, 'insyteApi', options);
+    const response = await this.helpers.httpRequest(options);
     return response;
   } catch (error) {
     throw new NodeApiError(this.getNode(), error as JsonObject);

@@ -1,5 +1,4 @@
 import {
-  IAuthenticateGeneric,
   ICredentialTestRequest,
   ICredentialType,
   INodeProperties,
@@ -38,28 +37,28 @@ export class InsyteApi implements ICredentialType {
       placeholder: 'https://new-api.insyteblinds.com',
     },
     {
-      displayName: 'Allowed Domains',
-      name: 'allowedDomains',
-      type: 'string',
-      default: 'new-api.insyteblinds.com',
-      description: 'Comma-separated list of allowed domains for HTTP requests',
-      placeholder: 'new-api.insyteblinds.com,api.example.com',
+      displayName: 'API Version',
+      name: 'apiVersion',
+      type: 'options',
+      options: [
+        {
+          name: 'v1',
+          value: 'v1',
+        },
+        {
+          name: 'v2',
+          value: 'v2',
+        },
+      ],
+      default: 'v2',
+      description: 'The API version to use',
     },
   ];
-
-  authenticate: IAuthenticateGeneric = {
-    type: 'generic',
-    properties: {
-      headers: {
-        Authorization: '=Basic {{ $credentials.username + ":" + $credentials.password | base64encode }}',
-      },
-    },
-  };
 
   test: ICredentialTestRequest = {
     request: {
       baseURL: '={{$credentials.baseUrl}}',
-      url: '/v2/Users',
+      url: '=/{{$credentials.apiVersion || "v2"}}/Users',
       method: 'GET',
     },
   };

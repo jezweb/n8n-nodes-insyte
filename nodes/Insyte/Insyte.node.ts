@@ -150,6 +150,7 @@ export class Insyte implements INodeType {
           },
         ],
         default: 'getAll',
+        description: 'Note: CRM resources are read-only. Use Live Diary for write operations.',
       },
 
       // Operations for Live Diary
