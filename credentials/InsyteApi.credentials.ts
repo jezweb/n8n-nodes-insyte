@@ -51,7 +51,7 @@ export class InsyteApi implements ICredentialType {
     type: 'generic',
     properties: {
       headers: {
-        Authorization: '=Basic {{ btoa($credentials.username + ":" + $credentials.password) }}',
+        Authorization: '=Basic {{ $credentials.username + ":" + $credentials.password | base64encode }}',
       },
     },
   };
