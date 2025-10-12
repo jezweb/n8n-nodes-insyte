@@ -283,6 +283,15 @@ export class Insyte implements INodeType {
         displayOptions: {
           show: {
             operation: ['getAll'],
+            resource: [
+              'activity',
+              'company',
+              'contact',
+              'invoice',
+              'job',
+              'opportunity',
+              'payment',
+            ],
           },
         },
         default: false,
@@ -297,6 +306,15 @@ export class Insyte implements INodeType {
           show: {
             operation: ['getAll'],
             returnAll: [false],
+            resource: [
+              'activity',
+              'company',
+              'contact',
+              'invoice',
+              'job',
+              'opportunity',
+              'payment',
+            ],
           },
         },
         typeOptions: {
@@ -317,6 +335,15 @@ export class Insyte implements INodeType {
         displayOptions: {
           show: {
             operation: ['getAll'],
+            resource: [
+              'activity',
+              'company',
+              'contact',
+              'invoice',
+              'job',
+              'opportunity',
+              'payment',
+            ],
           },
         },
         options: [
