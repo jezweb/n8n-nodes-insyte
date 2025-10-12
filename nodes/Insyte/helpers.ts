@@ -151,6 +151,7 @@ export async function insyteApiRequest(
   endpoint: string,
   body?: IDataObject,
   qs?: IDataObject,
+  customHeaders?: IDataObject,
 ): Promise<any> {
   const credentials = await this.getCredentials('insyteApi') as IDataObject;
   const baseUrl = (credentials.baseUrl as string) || 'https://new-api.insyteblinds.com';
@@ -161,14 +162,21 @@ export async function insyteApiRequest(
   const password = credentials.password as string;
   const authString = Buffer.from(`${username}:${password}`).toString('base64');
 
+  const headers: IDataObject = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Basic ${authString}`,
+  };
+
+  // Merge custom headers if provided
+  if (customHeaders && Object.keys(customHeaders).length > 0) {
+    Object.assign(headers, customHeaders);
+  }
+
   const options: IHttpRequestOptions = {
     method: method as any,
     url: `${baseUrl}/${apiVersion}${endpoint}`,
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Basic ${authString}`,
-    },
+    headers,
     json: true,
   };
 

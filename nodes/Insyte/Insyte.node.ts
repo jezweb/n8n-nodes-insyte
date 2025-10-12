@@ -91,6 +91,11 @@ export class Insyte implements INodeType {
             value: 'liveDiary',
             description: 'Check availability and book sales appointments for leads',
           },
+          {
+            name: 'Custom Request',
+            value: 'customRequest',
+            description: 'Make custom API requests with full control over method, endpoint, and body',
+          },
         ],
         default: 'contact',
       },
@@ -179,6 +184,64 @@ export class Insyte implements INodeType {
           },
         ],
         default: 'checkAvailability',
+      },
+
+      // HTTP Method for Custom Request
+      {
+        displayName: 'HTTP Method',
+        name: 'httpMethod',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: {
+          show: {
+            resource: ['customRequest'],
+          },
+        },
+        options: [
+          {
+            name: 'GET',
+            value: 'GET',
+            description: 'Retrieve data from the API',
+          },
+          {
+            name: 'POST',
+            value: 'POST',
+            description: 'Create new data',
+          },
+          {
+            name: 'PUT',
+            value: 'PUT',
+            description: 'Update existing data (full replacement)',
+          },
+          {
+            name: 'PATCH',
+            value: 'PATCH',
+            description: 'Partially update existing data',
+          },
+          {
+            name: 'DELETE',
+            value: 'DELETE',
+            description: 'Delete data',
+          },
+        ],
+        default: 'POST',
+        description: 'The HTTP method to use for the request',
+      },
+
+      // Custom Request - Endpoint Path
+      {
+        displayName: 'Endpoint Path',
+        name: 'endpointPath',
+        type: 'string',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['customRequest'],
+          },
+        },
+        default: '',
+        placeholder: '/CustomEndpoint or /CustomEndpoint/123',
+        description: 'The API endpoint path (e.g., /LiveDiary/Sales/CustomOperation). Do not include the base URL or API version.',
       },
 
       // ID field for single operations
@@ -296,6 +359,102 @@ export class Insyte implements INodeType {
             default: '',
             placeholder: 'e.g., Company',
             description: 'Related entities to include',
+          },
+        ],
+      },
+
+      // ========================================
+      // Custom Request - Body and Options
+      // ========================================
+      {
+        displayName: 'Request Body',
+        name: 'requestBody',
+        type: 'json',
+        displayOptions: {
+          show: {
+            resource: ['customRequest'],
+            httpMethod: ['POST', 'PUT', 'PATCH'],
+          },
+        },
+        default: '{\n  "key": "value"\n}',
+        description: 'JSON body for the request',
+        placeholder: '{\n  "field1": "value1",\n  "field2": "value2"\n}',
+      },
+      {
+        displayName: 'Custom Request Options',
+        name: 'customRequestOptions',
+        type: 'collection',
+        placeholder: 'Add Option',
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ['customRequest'],
+          },
+        },
+        options: [
+          {
+            displayName: 'Query Parameters',
+            name: 'queryParameters',
+            type: 'fixedCollection',
+            typeOptions: {
+              multipleValues: true,
+            },
+            default: {},
+            description: 'Query string parameters to add to the URL',
+            options: [
+              {
+                name: 'parameter',
+                displayName: 'Parameter',
+                values: [
+                  {
+                    displayName: 'Name',
+                    name: 'name',
+                    type: 'string',
+                    default: '',
+                    description: 'Parameter name',
+                  },
+                  {
+                    displayName: 'Value',
+                    name: 'value',
+                    type: 'string',
+                    default: '',
+                    description: 'Parameter value',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            displayName: 'Custom Headers',
+            name: 'customHeaders',
+            type: 'fixedCollection',
+            typeOptions: {
+              multipleValues: true,
+            },
+            default: {},
+            description: 'Custom headers to add to the request',
+            options: [
+              {
+                name: 'header',
+                displayName: 'Header',
+                values: [
+                  {
+                    displayName: 'Name',
+                    name: 'name',
+                    type: 'string',
+                    default: '',
+                    description: 'Header name',
+                  },
+                  {
+                    displayName: 'Value',
+                    name: 'value',
+                    type: 'string',
+                    default: '',
+                    description: 'Header value',
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -597,6 +756,74 @@ export class Insyte implements INodeType {
           extractedParameters: aiParameters,
         },
       });
+    }
+
+    // Handle Custom Request operations
+    if (resource === 'customRequest') {
+      for (let i = 0; i < items.length; i++) {
+        try {
+          const httpMethod = this.getNodeParameter('httpMethod', i) as string;
+          const endpointPath = this.getNodeParameter('endpointPath', i) as string;
+          const options = this.getNodeParameter('customRequestOptions', i) as IDataObject;
+
+          // Build request body for POST/PUT/PATCH
+          let requestBody: IDataObject | undefined;
+          if (['POST', 'PUT', 'PATCH'].includes(httpMethod)) {
+            const bodyJson = this.getNodeParameter('requestBody', i) as string;
+            try {
+              requestBody = JSON.parse(bodyJson);
+            } catch (error) {
+              throw new Error(`Invalid JSON in request body: ${error instanceof Error ? error.message : String(error)}`);
+            }
+          }
+
+          // Build query parameters
+          const queryParams: IDataObject = {};
+          if (options.queryParameters) {
+            const params = (options.queryParameters as IDataObject).parameter as Array<{ name: string; value: string }>;
+            if (Array.isArray(params)) {
+              params.forEach(param => {
+                if (param.name) {
+                  queryParams[param.name] = param.value;
+                }
+              });
+            }
+          }
+
+          // Build custom headers
+          const customHeaders: IDataObject = {};
+          if (options.customHeaders) {
+            const headers = (options.customHeaders as IDataObject).header as Array<{ name: string; value: string }>;
+            if (Array.isArray(headers)) {
+              headers.forEach(header => {
+                if (header.name) {
+                  customHeaders[header.name] = header.value;
+                }
+              });
+            }
+          }
+
+          // Make the API request using the helper function
+          const responseData = await insyteApiRequest.call(
+            this,
+            httpMethod,
+            endpointPath,
+            requestBody,
+            queryParams,
+            customHeaders,
+          );
+
+          returnData.push(responseData);
+        } catch (error) {
+          if (this.continueOnFail()) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            returnData.push({ error: errorMessage });
+            continue;
+          }
+          throw error;
+        }
+      }
+      return [this.helpers.returnJsonArray(returnData)];
     }
 
     // Handle Live Diary operations separately
