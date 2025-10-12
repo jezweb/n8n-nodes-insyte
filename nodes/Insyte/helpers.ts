@@ -243,6 +243,7 @@ export async function insyteApiRequestAllItems(
 /**
  * Make a standalone HTTP request (without API authentication)
  * Used for custom integrations like Insyte web leads
+ * Mimics wp_remote_post behavior: sends body as JSON string
  */
 export async function customHttpRequest(
   this: IExecuteFunctions,
@@ -266,11 +267,12 @@ export async function customHttpRequest(
     method: method as any,
     url,
     headers,
-    json: true,
+    json: false, // Don't auto-parse JSON, we're sending raw string
   };
 
+  // Convert body to JSON string (like wp_json_encode in WordPress)
   if (body && Object.keys(body).length > 0) {
-    options.body = body;
+    options.body = JSON.stringify(body);
   }
 
   if (qs && Object.keys(qs).length > 0) {
@@ -279,6 +281,14 @@ export async function customHttpRequest(
 
   try {
     const response = await this.helpers.httpRequest(options);
+    // Parse response as JSON if it's a string
+    if (typeof response === 'string') {
+      try {
+        return JSON.parse(response);
+      } catch {
+        return response;
+      }
+    }
     return response;
   } catch (error) {
     throw new NodeApiError(this.getNode(), error as JsonObject);
