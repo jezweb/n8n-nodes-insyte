@@ -5,7 +5,7 @@
 **n8n-nodes-insyte** is a community node for the Insyte CRM API, designed for the Window Furnishings Industry. It provides read-only access to CRM data and write access for booking sales appointments via Live Diary, with full AI tool integration.
 
 - **Package**: n8n-nodes-insyte
-- **Version**: 0.3.0+
+- **Version**: 0.5.0+
 - **Repository**: https://github.com/jezweb/n8n-nodes-insyte
 - **npm**: https://www.npmjs.com/package/n8n-nodes-insyte
 - **API**: https://new-api.insyteblinds.com
@@ -48,11 +48,19 @@ The node provides read access to these Insyte CRM resources:
 - **Opportunities** - View sales opportunity pipeline
 - **Payments** - View payment records
 
-### Write-Enabled Resource
+### Write-Enabled Resources
 
 - **Live Diary** - Check availability and book sales appointments (v0.3.0+)
   - Check Availability - Query available time slots
   - Book Lead - Create new lead with scheduled appointment
+
+- **Custom Request** - Standalone HTTP requests for integrations (v0.5.0+)
+  - Full control over HTTP method (GET, POST, PUT, PATCH, DELETE)
+  - Complete URL support (independent of API credentials)
+  - JSON request body editor
+  - Query parameters support
+  - Custom headers support
+  - Perfect for Insyte web leads integration or other webhooks
 
 ## Operations Supported
 
@@ -67,6 +75,15 @@ Each CRM resource supports:
 
 - **Check Availability** - Query available appointment slots
 - **Book Lead** - Create new lead with appointment
+
+### Custom Request Resource (Standalone HTTP Requests)
+
+- **Any HTTP Method** - Full control over HTTP requests
+  - Complete URL (no API credentials required)
+  - Custom request body (JSON)
+  - Custom query parameters
+  - Custom headers
+  - Independent of Insyte API authentication
 
 ## AI Tool Features (v0.2.0+)
 
@@ -223,6 +240,43 @@ Authentication configuration:
 - Base URL (default: https://new-api.insyteblinds.com)
 - API Version selector (v1/v2)
 - Credential test endpoint
+
+## Using Custom Request Feature (v0.5.0+)
+
+The Custom Request resource allows you to make standalone HTTP requests **independent of the Insyte API**. This is perfect for:
+- **Insyte web leads integration** - Using provisioned webhook URLs
+- **Custom webhooks** - Any external HTTP endpoint
+- **Third-party integrations** - Services outside the Insyte API
+- **Testing endpoints** - Quick HTTP request testing
+
+### Example: Insyte Web Leads Integration
+
+1. Select **Custom Request** as the resource
+2. Choose **POST** as the HTTP method
+3. Enter the **complete URL**: `https://your-provisioned-endpoint.insyte.com/webhook/leads`
+4. Add request body (JSON):
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phone": "0412345678",
+  "source": "Website Form"
+}
+```
+5. (Optional) Add query parameters:
+   - Name: `apiKey`, Value: `your-key-here`
+6. (Optional) Add custom headers:
+   - Name: `X-Integration-Token`, Value: `secret-token`
+
+### Custom Request Notes
+
+- **No API credentials required** - Works independently
+- **Complete URL** - Provide the full URL including protocol and domain
+- JSON body is only available for POST, PUT, and PATCH methods
+- Query parameters are appended to the URL
+- Custom headers can be added for authentication or other purposes
+- Default headers: `Accept: application/json`, `Content-Type: application/json`
 
 ## Common Tasks
 

@@ -151,6 +151,7 @@ export async function insyteApiRequest(
   endpoint: string,
   body?: IDataObject,
   qs?: IDataObject,
+  customHeaders?: IDataObject,
 ): Promise<any> {
   const credentials = await this.getCredentials('insyteApi') as IDataObject;
   const baseUrl = (credentials.baseUrl as string) || 'https://new-api.insyteblinds.com';
@@ -161,14 +162,21 @@ export async function insyteApiRequest(
   const password = credentials.password as string;
   const authString = Buffer.from(`${username}:${password}`).toString('base64');
 
+  const headers: IDataObject = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Basic ${authString}`,
+  };
+
+  // Merge custom headers if provided
+  if (customHeaders && Object.keys(customHeaders).length > 0) {
+    Object.assign(headers, customHeaders);
+  }
+
   const options: IHttpRequestOptions = {
     method: method as any,
     url: `${baseUrl}/${apiVersion}${endpoint}`,
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Basic ${authString}`,
-    },
+    headers,
     json: true,
   };
 
@@ -227,6 +235,77 @@ export async function insyteApiRequestAllItems(
   } while (responseData.value?.length === queryParams.top || responseData.length === queryParams.top);
 
   return returnData;
+}
+
+/**
+ * Get resource properties for dynamic options
+ */
+/**
+ * Make a standalone HTTP request (without API authentication)
+ * Used for custom integrations like Insyte web leads
+ * Mimics wp_remote_post behavior: sends body as JSON string
+ */
+export async function customHttpRequest(
+  this: IExecuteFunctions,
+  method: string,
+  url: string,
+  body?: IDataObject,
+  qs?: IDataObject,
+  customHeaders?: IDataObject,
+): Promise<any> {
+  const headers: IDataObject = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+
+  // Merge custom headers if provided
+  if (customHeaders && Object.keys(customHeaders).length > 0) {
+    Object.assign(headers, customHeaders);
+  }
+
+  const options: IHttpRequestOptions = {
+    method: method as any,
+    url,
+    headers,
+    json: false, // Don't auto-parse JSON, we're sending raw string
+  };
+
+  // Convert body to JSON string (like wp_json_encode in WordPress)
+  if (body && Object.keys(body).length > 0) {
+    options.body = JSON.stringify(body);
+  }
+
+  if (qs && Object.keys(qs).length > 0) {
+    options.qs = qs;
+  }
+
+  try {
+    const response = await this.helpers.httpRequest(options);
+
+    // Handle empty or null responses
+    if (response === null || response === undefined) {
+      return { success: true, message: 'Request completed successfully' };
+    }
+
+    // Parse response as JSON if it's a string
+    if (typeof response === 'string') {
+      // Handle empty string response
+      if (response.trim() === '') {
+        return { success: true, message: 'Request completed successfully (empty response)' };
+      }
+
+      try {
+        return JSON.parse(response);
+      } catch {
+        // If parsing fails, return the string wrapped in an object
+        return { success: true, response: response };
+      }
+    }
+
+    return response;
+  } catch (error) {
+    throw new NodeApiError(this.getNode(), error as JsonObject);
+  }
 }
 
 /**
