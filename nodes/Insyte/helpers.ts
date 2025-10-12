@@ -281,14 +281,27 @@ export async function customHttpRequest(
 
   try {
     const response = await this.helpers.httpRequest(options);
+
+    // Handle empty or null responses
+    if (response === null || response === undefined) {
+      return { success: true, message: 'Request completed successfully' };
+    }
+
     // Parse response as JSON if it's a string
     if (typeof response === 'string') {
+      // Handle empty string response
+      if (response.trim() === '') {
+        return { success: true, message: 'Request completed successfully (empty response)' };
+      }
+
       try {
         return JSON.parse(response);
       } catch {
-        return response;
+        // If parsing fails, return the string wrapped in an object
+        return { success: true, response: response };
       }
     }
+
     return response;
   } catch (error) {
     throw new NodeApiError(this.getNode(), error as JsonObject);
