@@ -54,12 +54,13 @@ The node provides read access to these Insyte CRM resources:
   - Check Availability - Query available time slots
   - Book Lead - Create new lead with scheduled appointment
 
-- **Custom Request** - Advanced custom API requests (v0.5.0+)
+- **Custom Request** - Standalone HTTP requests for integrations (v0.5.0+)
   - Full control over HTTP method (GET, POST, PUT, PATCH, DELETE)
-  - Custom endpoint paths
+  - Complete URL support (independent of API credentials)
   - JSON request body editor
   - Query parameters support
   - Custom headers support
+  - Perfect for Insyte web leads integration or other webhooks
 
 ## Operations Supported
 
@@ -75,13 +76,14 @@ Each CRM resource supports:
 - **Check Availability** - Query available appointment slots
 - **Book Lead** - Create new lead with appointment
 
-### Custom Request Resource (Advanced Access)
+### Custom Request Resource (Standalone HTTP Requests)
 
-- **Any HTTP Method** - Full control over API requests
-  - Custom endpoint path
+- **Any HTTP Method** - Full control over HTTP requests
+  - Complete URL (no API credentials required)
   - Custom request body (JSON)
   - Custom query parameters
   - Custom headers
+  - Independent of Insyte API authentication
 
 ## AI Tool Features (v0.2.0+)
 
@@ -241,38 +243,40 @@ Authentication configuration:
 
 ## Using Custom Request Feature (v0.5.0+)
 
-The Custom Request resource allows you to make advanced API calls with full control over the request structure. This is useful for:
-- Testing new API endpoints
-- Making requests to endpoints not yet supported by the node
-- Advanced API operations requiring custom headers or body structure
+The Custom Request resource allows you to make standalone HTTP requests **independent of the Insyte API**. This is perfect for:
+- **Insyte web leads integration** - Using provisioned webhook URLs
+- **Custom webhooks** - Any external HTTP endpoint
+- **Third-party integrations** - Services outside the Insyte API
+- **Testing endpoints** - Quick HTTP request testing
 
-### Example: Custom POST Request
+### Example: Insyte Web Leads Integration
 
 1. Select **Custom Request** as the resource
 2. Choose **POST** as the HTTP method
-3. Enter the endpoint path: `/LiveDiary/Sales/CustomOperation`
+3. Enter the **complete URL**: `https://your-provisioned-endpoint.insyte.com/webhook/leads`
 4. Add request body (JSON):
 ```json
 {
-  "customField": "customValue",
-  "nestedObject": {
-    "key": "value"
-  }
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phone": "0412345678",
+  "source": "Website Form"
 }
 ```
 5. (Optional) Add query parameters:
-   - Name: `filter`, Value: `active eq true`
-   - Name: `top`, Value: `10`
+   - Name: `apiKey`, Value: `your-key-here`
 6. (Optional) Add custom headers:
-   - Name: `X-Custom-Header`, Value: `custom-value`
+   - Name: `X-Integration-Token`, Value: `secret-token`
 
 ### Custom Request Notes
 
-- Authentication headers are automatically added
-- The base URL and API version from credentials are used
+- **No API credentials required** - Works independently
+- **Complete URL** - Provide the full URL including protocol and domain
 - JSON body is only available for POST, PUT, and PATCH methods
-- Query parameters are added to the URL
-- Custom headers override default headers if same name is used
+- Query parameters are appended to the URL
+- Custom headers can be added for authentication or other purposes
+- Default headers: `Accept: application/json`, `Content-Type: application/json`
 
 ## Common Tasks
 

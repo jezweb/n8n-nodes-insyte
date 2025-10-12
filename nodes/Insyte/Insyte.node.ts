@@ -15,6 +15,7 @@ import {
   IODataParams,
   getResourceProperties,
   parseAIQuery,
+  customHttpRequest,
 } from './helpers';
 
 export class Insyte implements INodeType {
@@ -36,6 +37,21 @@ export class Insyte implements INodeType {
       {
         name: 'insyteApi',
         required: true,
+        displayOptions: {
+          show: {
+            resource: [
+              'activity',
+              'company',
+              'contact',
+              'invoice',
+              'job',
+              'opportunity',
+              'payment',
+              'liveDiary',
+              'ai',
+            ],
+          },
+        },
       },
     ],
     properties: [
@@ -228,10 +244,10 @@ export class Insyte implements INodeType {
         description: 'The HTTP method to use for the request',
       },
 
-      // Custom Request - Endpoint Path
+      // Custom Request - Full URL
       {
-        displayName: 'Endpoint Path',
-        name: 'endpointPath',
+        displayName: 'Request URL',
+        name: 'requestUrl',
         type: 'string',
         required: true,
         displayOptions: {
@@ -240,8 +256,8 @@ export class Insyte implements INodeType {
           },
         },
         default: '',
-        placeholder: '/CustomEndpoint or /CustomEndpoint/123',
-        description: 'The API endpoint path (e.g., /LiveDiary/Sales/CustomOperation). Do not include the base URL or API version.',
+        placeholder: 'https://example.com/api/webhook/leads',
+        description: 'The complete URL for the request (e.g., Insyte web leads integration endpoint)',
       },
 
       // ID field for single operations
@@ -758,12 +774,12 @@ export class Insyte implements INodeType {
       });
     }
 
-    // Handle Custom Request operations
+    // Handle Custom Request operations (standalone HTTP requests)
     if (resource === 'customRequest') {
       for (let i = 0; i < items.length; i++) {
         try {
           const httpMethod = this.getNodeParameter('httpMethod', i) as string;
-          const endpointPath = this.getNodeParameter('endpointPath', i) as string;
+          const requestUrl = this.getNodeParameter('requestUrl', i) as string;
           const options = this.getNodeParameter('customRequestOptions', i) as IDataObject;
 
           // Build request body for POST/PUT/PATCH
@@ -803,11 +819,11 @@ export class Insyte implements INodeType {
             }
           }
 
-          // Make the API request using the helper function
-          const responseData = await insyteApiRequest.call(
+          // Make standalone HTTP request (no API credentials needed)
+          const responseData = await customHttpRequest.call(
             this,
             httpMethod,
-            endpointPath,
+            requestUrl,
             requestBody,
             queryParams,
             customHeaders,

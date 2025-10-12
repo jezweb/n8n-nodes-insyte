@@ -240,6 +240,54 @@ export async function insyteApiRequestAllItems(
 /**
  * Get resource properties for dynamic options
  */
+/**
+ * Make a standalone HTTP request (without API authentication)
+ * Used for custom integrations like Insyte web leads
+ */
+export async function customHttpRequest(
+  this: IExecuteFunctions,
+  method: string,
+  url: string,
+  body?: IDataObject,
+  qs?: IDataObject,
+  customHeaders?: IDataObject,
+): Promise<any> {
+  const headers: IDataObject = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+
+  // Merge custom headers if provided
+  if (customHeaders && Object.keys(customHeaders).length > 0) {
+    Object.assign(headers, customHeaders);
+  }
+
+  const options: IHttpRequestOptions = {
+    method: method as any,
+    url,
+    headers,
+    json: true,
+  };
+
+  if (body && Object.keys(body).length > 0) {
+    options.body = body;
+  }
+
+  if (qs && Object.keys(qs).length > 0) {
+    options.qs = qs;
+  }
+
+  try {
+    const response = await this.helpers.httpRequest(options);
+    return response;
+  } catch (error) {
+    throw new NodeApiError(this.getNode(), error as JsonObject);
+  }
+}
+
+/**
+ * Get resource properties for dynamic options
+ */
 export function getResourceProperties(resource: string): IDataObject[] {
   const properties: { [key: string]: IDataObject[] } = {
     contact: [
